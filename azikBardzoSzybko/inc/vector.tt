@@ -1,0 +1,71 @@
+template <typename Type, int Size>
+template <typename... Args, typename>
+Vector<Type, Size>::Vector(Args&&... args) : std::array<Type, Size>{} {
+    addArgument<0, Args...>(args...);
+}
+
+template <typename Type, int Size>
+template <int Index, typename Tp, typename... Args>
+void Vector<Type, Size>::addArgument(Tp type, Args... args) {
+    (*this)[Index] = type;
+    addArgument<Index + 1, Args...>(args...);
+}
+
+template <typename Type, int Size>
+template <int Index, typename Tp>
+void Vector<Type, Size>::addArgument(Tp type) {
+    (*this)[Index] = type;
+}
+
+template <typename Type, int Size>
+Vector<Type, Size> operator*(Vector<Type, Size> const& first, Vector<Type, Size> const& second) {
+    Vector<Type, Size> temp;
+    for (int i = 0; i < Size; ++i)
+        temp[i] = first[i] * second[i];
+    return temp;
+}
+
+template <typename Type, int Size>
+Vector<Type, Size> operator-(Vector<Type, Size> const& first, Vector<Type, Size> const& second) {
+	Vector<Type, Size> temp;
+	for (int i = 0; i < Size; i++)
+		temp[i] = first[i] - second[i];
+	return temp;
+}
+
+template <typename Type, int Size>
+Vector<Type, Size> operator+(Vector<Type, Size> const& first, Vector<Type, Size> const& second) {
+	Vector<Type, Size> temp;
+	for (int i = 0; i < Size; i++)
+		temp[i] = first[i] + second[i];
+	return temp;
+}
+
+template <typename Type, int Size>
+std::istream& operator >>(std::istream& strm, Vector<Type,Size> &vct) {
+	for (auto& element : vct)
+        strm >> element;
+	return strm;
+}
+
+template <typename Type, int Size>
+std::ostream& operator<<(std::ostream& strm, Vector<Type,Size> const& vct) {
+	for (int i = 0; i < Size - 1; ++i)
+        strm << vct[i] << ' ';
+	return strm << vct.back();
+}
+
+template <typename Type, int Size>
+Vector<Type, Size>& Vector<Type, Size>::operator+=(Vector const& second) {
+    for (int i = 0; i < Size; ++i)
+        (*this)[i] += second[i];
+    return *this;
+}
+
+template <typename Type, int Size>
+Vector<Type, Size> operator*(Vector<Type, Size> const& first, Type const& second) {
+    Vector<Type, Size> temp = first;
+    for (auto& element : temp)
+        element *= second;
+    return temp;
+}

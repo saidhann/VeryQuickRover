@@ -1,0 +1,64 @@
+#include <numeric>
+
+template <typename Type, int Size>
+template <int Index, typename Tp, typename... Args>
+void Matrix<Type, Size>::addArgument(Tp type, Args... args) {
+	(*this)[Index] = type;
+	addArgument<Index + 1, Args...>(args...);
+}
+
+template <typename Type, int Size>
+template <int Index, typename Tp>
+void Matrix<Type, Size>::addArgument(Tp type) {
+	(*this)[Index] = type;
+}
+
+template <typename Type, int Size>
+template <typename... Args, typename>
+Matrix<Type, Size>::Matrix(Args&&... args) {
+	addArgument<0, Args...>(args...);
+}
+
+template <typename Type, int Size>
+Vector<Type, Size> Matrix<Type, Size>::operator*(Vector<Type, Size> const& vec) const {
+	Vector<Type, Size> temp;
+	for (int i = 0; i < Size; i++)
+        temp[i] = std::inner_product((*this)[i].begin(), (*this)[i].end(), vec.begin(), Type{});
+	return temp;
+}
+
+template <typename Type, int Size>
+Type Matrix<Type, Size>::calculateDeterminant(void) const {
+	Type determinant={};
+	if constexpr (Size == 2) {
+		return { (*this)[0][0] * (*this)[1][1] - (*this)[1][0] * (*this)[0][1] };
+	}
+	else {
+		for (int i = 0; i < Size; i++)
+		{
+			Matrix <Type, (Size - 1)> temp;
+			for (int j = 0; j < Size - 1; j++) {
+				for (int k = 0, K = 0; K < Size; k++, K++) {
+					if (K != i) temp[j][k] = (*this)[j + 1][K];
+					else k--;
+				}
+			}
+			determinant = determinant + (*this)[0][i]*temp.calculateDeterminant()*(((i+1) % 2 == 0) ? 1 : -1);
+		}
+	}
+	return determinant;
+}
+
+template <typename Type, int Size>
+void Matrix<Type, Size>::transposeMatrix(void) {
+	for (int i = 0; i < Size; i++)
+		for (int j = i; j < Size; j++)
+			std::swap((*this)[i][j], (*this)[j][i]);
+}
+
+template <typename Type, int Size>
+std::istream& operator >>(std::istream& strm, Matrix<Type,Size> &mtx) {
+	for (auto& row : mtx)
+		strm >> row;
+	return strm;
+}
